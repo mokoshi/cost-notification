@@ -1,0 +1,34 @@
+org: mokoshi
+app: aws-cost-notification
+service: aws-cost-notification
+useDotenv: true
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${env:AWS_REGION}
+
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "ce:GetCostAndUsage"
+          Resource: "*"
+        - Effect: "Allow"
+          Action:
+            - "iam:ListAccountAliases"
+          Resource: "*"
+
+functions:
+  costNotification:
+    handler: handler.run
+    events:
+      - schedule: cron(0 1 * * ? *)
+    environment:
+      SLACK_WEBHOOK_URL: ${env:SLACK_WEBHOOK_URL}
+
+plugins:
+  - serverless-esbuild
